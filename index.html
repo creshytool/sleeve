@@ -1,0 +1,215 @@
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sleeve Length Calculator</title>
+
+<style>
+.sleeve-tool {
+  max-width: 500px;
+  width: 100%;
+  margin: auto;
+  padding: 18px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+.sleeve-tool h2 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.sleeve-tool label {
+  display: block;
+  margin-top: 10px;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.sleeve-tool input,
+.sleeve-tool select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* BUTTONS (UPDATED COLOR) */
+.btn-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.sleeve-tool button {
+  flex: 1;
+  padding: 10px;
+  font-size: 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #111;   /* 🔥 NEW DARK ACCENT */
+  color: #fff;
+  transition: 0.2s;
+}
+
+.sleeve-tool button:hover {
+  background: #333;
+}
+
+.secondary-btn {
+  background: #444 !important;
+}
+
+.secondary-btn:hover {
+  background: #666 !important;
+}
+
+.result-box {
+  margin-top: 15px;
+  padding: 12px;
+  background: #fafafa;
+  border-left: 4px solid #000;
+  display: none;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.small-note {
+  font-size: 12px;
+  color: #666;
+  margin-top: 8px;
+}
+</style>
+
+<div class="sleeve-tool">
+
+  <h2>Sleeve Length Calculator</h2>
+
+  <label>Measurement Method</label>
+  <select id="method">
+    <option value="body">Measure on Body</option>
+    <option value="shirt">Measure Existing Garment</option>
+  </select>
+
+  <label>Sleeve Length</label>
+  <input type="number" id="sleeve" placeholder="e.g. 34">
+
+  <label>Unit</label>
+  <select id="unit">
+    <option value="inches">Inches</option>
+    <option value="cm">Centimeters</option>
+  </select>
+
+  <label>Height (optional for better accuracy)</label>
+  <input type="number" id="height" placeholder="e.g. 175 cm">
+
+  <label>Garment Type</label>
+  <select id="type">
+    <option value="shirt">Shirt</option>
+    <option value="jacket">Jacket</option>
+    <option value="hoodie">Hoodie</option>
+  </select>
+
+  <div class="btn-row">
+    <button onclick="calculateSleeve()">Calculate</button>
+    <button class="secondary-btn" onclick="resetTool()">Reset</button>
+  </div>
+
+  <div class="btn-row">
+    <button class="secondary-btn" onclick="copyResult()">Copy Result</button>
+  </div>
+
+  <div class="result-box" id="result"></div>
+
+  <div class="small-note">
+    ✔ Pro Tip: Body measurement gives best tailor accuracy.
+  </div>
+
+</div>
+
+<script>
+function calculateSleeve() {
+
+  var method = document.getElementById("method").value;
+  var sleeve = parseFloat(document.getElementById("sleeve").value);
+  var unit = document.getElementById("unit").value;
+  var height = parseFloat(document.getElementById("height").value);
+  var type = document.getElementById("type").value;
+
+  var resultBox = document.getElementById("result");
+
+  if (!sleeve || sleeve <= 0) {
+    resultBox.style.display = "block";
+    resultBox.innerHTML = "❌ Enter valid sleeve length.";
+    return;
+  }
+
+  var inches = unit === "cm" ? (sleeve / 2.54) : sleeve;
+  var cm = unit === "inches" ? (sleeve * 2.54) : sleeve;
+
+  // 🔥 Smart adjustment using height (optional)
+  if (height && height > 0) {
+    if (height < 165) inches -= 0.5;
+    else if (height > 180) inches += 0.5;
+  }
+
+  // 🔥 Size logic improved
+  var size = "";
+  if (inches < 31) size = "XS";
+  else if (inches < 33) size = "S";
+  else if (inches < 35) size = "M";
+  else if (inches < 37) size = "L";
+  else size = "XL";
+
+  // 🔥 Fit logic by garment type
+  var fit = "";
+
+  if (type === "shirt") {
+    fit = (inches < 33) ? "Slim Shirt Fit" : "Regular Shirt Fit";
+  }
+
+  if (type === "jacket") {
+    fit = (inches < 35) ? "Regular Jacket Fit" : "Relaxed Jacket Fit";
+  }
+
+  if (type === "hoodie") {
+    fit = "Relaxed Hoodie Fit Recommended";
+  }
+
+  var tip = (method === "body")
+    ? "Measure from shoulder bone to wrist with relaxed arm."
+    : "Measure from shoulder seam to cuff of garment.";
+
+  resultBox.style.display = "block";
+  resultBox.innerHTML =
+    "<strong>Result Summary</strong><br><br>" +
+    "Sleeve: " + sleeve + " " + unit + "<br>" +
+    "Converted: " + inches.toFixed(1) + " in / " + cm.toFixed(1) + " cm<br>" +
+    "Suggested Size: <strong>" + size + "</strong><br>" +
+    "Fit Type: <strong>" + fit + "</strong><br><br>" +
+    tip + "<br><br>" +
+    "✔ Best for tailoring, shirts, jackets & hoodies.";
+}
+
+function resetTool() {
+  document.getElementById("sleeve").value = "";
+  document.getElementById("height").value = "";
+  document.getElementById("result").style.display = "none";
+}
+
+function copyResult() {
+  var text = document.getElementById("result").innerText;
+  if (!text) return;
+
+  navigator.clipboard.writeText(text)
+    .then(() => alert("Copied successfully"))
+    .catch(() => alert("Copy failed"));
+}
+</script>
